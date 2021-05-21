@@ -69,31 +69,25 @@ class DMDMPCcontroller():
 		
 		#trajectory_cost_list = trajectory_cost_fn(self.cost_fn, np.array(obs_list), np.array(act_list), np.array(obs_next_list)) 	
 		
-		#convert list of tensors from gpu to cpu numpy?
-		print("before",obs_list)
-		print("before",obs_next_list)
-		print("before",act_list)		
-
+		#convert list of tensors from gpu to cpu numpy?		
 		for i in range(self.horizon):
 				for j in range(self.num_simulated_paths):
 					if i == 0:obs_list[i][j] = obs_list[i][j].cpu().numpy()
 					obs_next_list[i][j] = obs_next_list[i][j].cpu().numpy() 
 					act_list[i][j] = act_list[i][j].cpu().numpy()
 
-		print("after",obs_list)
-		print("after",obs_next_list)
-		print("after",act_list)
-		
 		
 		trajectory_cost_list = np.array(trajectory_cost_fn(self.cost_fn, np.array(obs_list), np.array(act_list), np.array(obs_next_list)))
-		print(trajectory_cost_list)
-		print(self.elite, type(self.elite))
+		#print(trajectory_cost_list)
+		#print(self.elite, type(self.elite))
 		elite_inds = trajectory_cost_list.argsort()[0:int(self.elite)]
 		act_list=np.array(act_list)
 		weighted_actions=np.array([act_list[:,i,:]*trajectory_cost_list[i] for i in elite_inds])
-		print(weighted_actions)
+		
+		#print(weighted_actions)
 		grads = np.sum(weighted_actions, axis=0)
-		print("grads",grads)
+		
+		#print("grads",grads)
 		#compute the grad from elite fractions
 		self.grad_m=grads/np.sum(trajectory_cost_list[elite_inds])
 		
@@ -104,8 +98,8 @@ class DMDMPCcontroller():
 		control= np.clip(mean_action, self.env.action_space.low, self.env.action_space.high)
 
 		#update other means
-		print("self.mean:",  np.array(self.mean))
-		print("self.grad_m:", self.grad_m)
+		#print("self.mean:",  np.array(self.mean))
+		#print("self.grad_m:", self.grad_m)
 
 		self.mean=(1-self.gamma)*self.mean+self.gamma*self.grad_m
 

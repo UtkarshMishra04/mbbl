@@ -200,8 +200,8 @@ class TD3_MPC:
                     action = self.env.action_space.sample()
                 else:  # action with noise
                     action_rl, action_mpc = self.choose_action_mpc(state, self.action_noise)
-                    print("rl action:",action_rl, type(action_rl))
-                    print("mpc action:",action_mpc, type(action_mpc))
+                    #print("rl action:",action_rl, type(action_rl))
+                    #print("mpc action:",action_mpc, type(action_mpc))
                     action = action_mpc
                 next_state, reward, done, _ = self.env.step(action)
                 # next_state = self.running_state(next_state)

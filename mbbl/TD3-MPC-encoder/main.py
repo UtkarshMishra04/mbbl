@@ -41,7 +41,7 @@ from td3_mpc import TD3_MPC
 def main(env_id, dim_latent, render, num_process, lr_p, lr_v, discount_factor, polyak, target_action_noise_std, target_action_noise_clip,
          explore_size, memory_size, step_per_iter, batch_size, min_update_step, update_step, max_iter, eval_iter,
          save_iter, action_noise, policy_update_delay, model_path, log_path, seed, planning_h,simulated_paths, elite_fraction,alpha,gamma):
-    base_dir = log_path + env_id + "/TD3_encoder_exp{}".format(seed)
+    base_dir = log_path + env_id + "/TD3_MPC_encoder_exp{}".format(seed)
     writer = SummaryWriter(base_dir)
 
     td3 = TD3_MPC(env_id,
