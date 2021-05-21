@@ -177,8 +177,8 @@ class Encoder():
 
     def update_writer(self, writer, i_iter):
 
-        enco_loss = torch.mean(self.encoder_loss)
-        deco_loss = torch.mean(self.decoder_loss)
+        enco_loss = torch.mean(self.loss)
+        deco_loss = torch.mean(self.loss)
         fd_loss = torch.mean(self.fdyn_loss)
         id_loss = torch.mean(self.idyn_loss)
 

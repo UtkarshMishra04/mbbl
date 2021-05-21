@@ -248,6 +248,8 @@ class TD3_MPC:
         writer.add_scalar("rewards/max_reward", log['max_episode_reward'], i_iter)
         writer.add_scalar("rewards/num_steps", log['num_steps'], i_iter)
 
+        writer = self.encodings.update_writer(writer, i_iter)
+        
     def update(self, batch, batch2, k_iter):
         """learn model"""
         batch_state = FLOAT(batch.state).to(device)
