@@ -123,7 +123,9 @@ class Encoder():
         self.forward_dynamics = GaussianModel2(self.latent_dim, self.action_dim, self.latent_dim, dim_hidden=128).to(device)
         self.inverse_dynamics = GaussianModel2(self.latent_dim, self.latent_dim, self.action_dim, dim_hidden=128).to(device)
 
-        self.optimizer = optim.Adam(list(self.encoder.parameters())+list(self.decoder.parameters()), lr=0.0003)
+        # self.optimizer = optim.Adam(list(self.encoder.parameters())+list(self.decoder.parameters()), lr=0.0003)
+        self.optimizer_encoder = optim.Adam(self.encoder.parameters(), lr=0.0003)
+        self.optimizer_decoder = optim.Adam(self.decoder.parameters(), lr=0.0003)
         self.optimizer_fdyn = optim.Adam(self.forward_dynamics.parameters(), lr=0.0003)
         self.optimizer_idyn = optim.Adam(self.inverse_dynamics.parameters(), lr=0.0003)
 
@@ -153,15 +155,15 @@ class Encoder():
         
         self.optimizer_fdyn.zero_grad()
         self.optimizer_idyn.zero_grad()
-        self.optimizer.zero_grad()
+        self.optimizer_decoder.zero_grad()
+        self.optimizer_encoder.zero_grad()
 
-        self.fdyn_loss.backward(retain_graph=True)
-        self.idyn_loss.backward(retain_graph=True)
-        self.loss.backward(retain_graph=True)   
+        self.loss.backward()   
 
         self.optimizer_fdyn.step()
         self.optimizer_idyn.step()
-        self.optimizer.step()
+        self.optimizer_decoder.step()
+        self.optimizer_encoder.step()
         
     def intrisic_reward(self, state, action, next_state):
 
@@ -172,18 +174,16 @@ class Encoder():
 
         return torch.linalg.norm((pred_encoded_nstate - encoded_state), ord=1)
 
-
-
-
     def update_writer(self, writer, i_iter):
 
-        enco_loss = torch.mean(self.encoder_loss)
-        deco_loss = torch.mean(self.decoder_loss)
+        # enco_loss = torch.mean(self.encoder_loss)
+        # deco_loss = torch.mean(self.decoder_loss)
+        loss = torch.mean(self.loss)
         fd_loss = torch.mean(self.fdyn_loss)
         id_loss = torch.mean(self.idyn_loss)
 
-        writer.add_scalar("encodings/encoder_loss", enco_loss, i_iter)
-        writer.add_scalar("encodings/decoder_loss", enco_loss, i_iter)
+        writer.add_scalar("encodings/module_loss", loss, i_iter)
+        # writer.add_scalar("encodings/decoder_loss", enco_loss, i_iter)
         writer.add_scalar("encodings/forward_dynamics_loss", fd_loss, i_iter)
         writer.add_scalar("encodings/inverse_dynamics_loss", id_loss, i_iter)
 

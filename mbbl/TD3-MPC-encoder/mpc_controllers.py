@@ -63,7 +63,7 @@ class DMDMPCcontroller():
 
 			with torch.no_grad():
 				obs = self.dynamics.predict_state_trajectory(obs,actions)
-				print(obs, type(obs))
+				# print(obs, type(obs))
 			obs_next_list.append(obs)
 
 		

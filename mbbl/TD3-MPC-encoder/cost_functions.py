@@ -61,5 +61,5 @@ def trajectory_cost_fn(cost_fn, states, actions, next_states):
     trajectory_cost = 0
     for i in range(len(actions)):
         trajectory_cost += cost_fn(states[i], actions[i], next_states[i])
-    print(trajectory_cost)
+    # print(trajectory_cost)
     return trajectory_cost

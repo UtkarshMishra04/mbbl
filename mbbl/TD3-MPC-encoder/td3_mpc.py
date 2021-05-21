@@ -168,7 +168,7 @@ class TD3_MPC:
                 self.env.render()
             action_rl, action_mpc = self.choose_action_mpc(state, 0)
             action = action_mpc
-            print("action in eval", action)
+            # print("action in eval", action)
             state, reward, done, _ = self.env.step(action)
 
             test_reward += reward
