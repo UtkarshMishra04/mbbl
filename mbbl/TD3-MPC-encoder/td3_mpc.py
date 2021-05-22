@@ -204,10 +204,13 @@ class TD3_MPC:
                     #print("mpc action:",action_mpc, type(action_mpc))
                     action = action_mpc
                 next_state, reward, done, _ = self.env.step(action)
+                in_reward = self.encodings.intrinsic_reward(state,action,next_state)
+                #print(in_reward, type(in_reward))
+
                 # next_state = self.running_state(next_state)
                 mask = 0 if done else 1
                 # ('state', 'action', 'reward', 'next_state', 'mask', 'log_prob')
-                self.memory.push(state, action, reward, next_state, mask, None)
+                self.memory.push(state, action, reward+in_reward, next_state, mask, None)
 
                 episode_reward += reward
                 global_steps += 1

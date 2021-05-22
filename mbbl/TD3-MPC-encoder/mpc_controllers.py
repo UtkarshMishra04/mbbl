@@ -45,7 +45,7 @@ class DMDMPCcontroller():
 	def get_control(self, state, rl_action, alpha):
 		obs, obs_list, obs_next_list, act_list = [], [], [], [] 
 		[obs.append(state) for _ in range(self.num_simulated_paths)]
-
+		self.mean[0] = rl_action.cpu().numpy()
 		for step in range(self.horizon):
 
 			obs_list.append(obs)
@@ -54,16 +54,16 @@ class DMDMPCcontroller():
 			
 			for _ in range(self.num_simulated_paths):
 				action = np.random.multivariate_normal(self.mean[step],self.std)
+				noise = np.random.randn(self.num_actions)
+				action += noise
 				action = np.clip(action, 0.99*self.env.action_space.low, 0.99*self.env.action_space.high)	
 				actions.append(FLOAT(action).to(device))
 			act_list.append(actions)
 
-			#curr_states = FLOAT(obs).to(device)
-			#controls = act_list.cpu().numpy()[0]
 
 			with torch.no_grad():
 				obs = self.dynamics.predict_state_trajectory(obs,actions)
-				# print(obs, type(obs))
+
 			obs_next_list.append(obs)
 
 		
@@ -78,8 +78,7 @@ class DMDMPCcontroller():
 
 		
 		trajectory_cost_list = np.array(trajectory_cost_fn(self.cost_fn, np.array(obs_list), np.array(act_list), np.array(obs_next_list)))
-		#print(trajectory_cost_list)
-		#print(self.elite, type(self.elite))
+
 		elite_inds = trajectory_cost_list.argsort()[0:int(self.elite)]
 		act_list=np.array(act_list)
 		weighted_actions=np.array([act_list[:,i,:]*trajectory_cost_list[i] for i in elite_inds])
