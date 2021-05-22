@@ -36,19 +36,18 @@ class DMDMPCcontroller():
 		self.alpha=alpha
 
 		self.env, env_continuous, num_states, self.num_actions = get_env_info(self.env_id)
-		self.mean = np.array([np.array([0.]*self.num_actions) for _ in range(horizon)]) #np.full((horizon,self.num_actions),0., dtype=float)
+		self.mean = np.array([np.array([0.2]*self.num_actions) for _ in range(horizon)]) #np.full((horizon,self.num_actions),0., dtype=float)
 		self.std = 0.4*np.identity((self.num_actions))
 		self.elite = self.num_simulated_paths*elite_fraction/100
 
-		self.weighted_actions = self.grad_m = [0.]*self.horizon
+		#self.weighted_actions = self.grad_m = [0.]*self.horizon
 
 	def get_control(self, state, rl_action, alpha):
 		obs, obs_list, obs_next_list, act_list = [], [], [], [] 
 		[obs.append(state) for _ in range(self.num_simulated_paths)]
-		print("means: ",self.mean)
-		print("rlaction:  ",rl_action)
-		self.mean[0] = rl_action
-		print("means:",self.mean)
+
+		self.mean[0] = rl_action.cpu().numpy()
+
 		for step in range(self.horizon):
 
 			obs_list.append(obs)
@@ -66,7 +65,6 @@ class DMDMPCcontroller():
 
 			with torch.no_grad():
 				obs = self.dynamics.predict_state_trajectory(obs,actions)
-				print(obs, type(obs))
 			obs_next_list.append(obs)
 
 		
