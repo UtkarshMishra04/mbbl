@@ -12,7 +12,7 @@ def init_weight(m):
         nn.init.constant_(m.bias, 0.0)
 
 class MLPnetwork1(nn.Module):
-    def __init__(self, dim_input, dim_output, dim_hidden=128, activation=nn.LeakyReLU):
+    def __init__(self, dim_input, dim_output, dim_hidden=500, activation=nn.LeakyReLU):
         super(MLPnetwork1, self).__init__()
 
         self.dim_input = dim_input
@@ -35,7 +35,7 @@ class MLPnetwork1(nn.Module):
 
 
 class GaussianModel1(nn.Module):
-    def __init__(self, dim_input, dim_output, dim_hidden=128, max_sigma=1e1, min_sigma=1e-4):
+    def __init__(self, dim_input, dim_output, dim_hidden=500, max_sigma=1e1, min_sigma=1e-4):
 
         super().__init__()
 
@@ -73,7 +73,7 @@ class GaussianModel1(nn.Module):
         return mu + sigma * eps
 
 class GaussianModel2(nn.Module):
-    def __init__(self, dim_input1, dim_input2, dim_output, dim_hidden=128, max_sigma=1e1, min_sigma=1e-4):
+    def __init__(self, dim_input1, dim_input2, dim_output, dim_hidden=500, max_sigma=1e1, min_sigma=1e-4):
 
         super().__init__()
 
@@ -118,10 +118,10 @@ class Encoder():
         self.latent_dim = latent_dim
         self.action_dim = action_dim
 
-        self.encoder = MLPnetwork1(self.state_dim, self.latent_dim, dim_hidden=128).to(device)
-        self.decoder = MLPnetwork1(self.latent_dim, self.state_dim, dim_hidden=128).to(device)
-        self.forward_dynamics = GaussianModel2(self.latent_dim, self.action_dim, self.latent_dim, dim_hidden=128).to(device)
-        self.inverse_dynamics = GaussianModel2(self.latent_dim, self.latent_dim, self.action_dim, dim_hidden=128).to(device)
+        self.encoder = MLPnetwork1(self.state_dim, self.latent_dim, dim_hidden=500).to(device)
+        self.decoder = MLPnetwork1(self.latent_dim, self.state_dim, dim_hidden=500).to(device)
+        self.forward_dynamics = GaussianModel2(self.latent_dim, self.action_dim, self.latent_dim, dim_hidden=500).to(device)
+        self.inverse_dynamics = GaussianModel2(self.latent_dim, self.latent_dim, self.action_dim, dim_hidden=500).to(device)
 
         self.optimizer = optim.Adam(list(self.encoder.parameters())+list(self.decoder.parameters()), lr=0.0003)
         self.optimizer_fdyn = optim.Adam(self.forward_dynamics.parameters(), lr=0.0003)
@@ -150,13 +150,14 @@ class Encoder():
         self.fdyn_loss = nn.MSELoss()(pred_encoded_nstate1, encoded_nstate1) + nn.MSELoss()(pred_encoded_nstate2, encoded_nstate2)
         self.idyn_loss = nn.MSELoss()(pred_encoded_action1, action1) + nn.MSELoss()(pred_encoded_action2, action2)   
         self.loss = nn.MSELoss()(state1,decoded_state1)+nn.MSELoss()(next_state1,decoded_nstate1)+self.fdyn_loss+self.idyn_loss
+        self.loss += nn.MSELoss()(state2,decoded_state2)+nn.MSELoss()(next_state2,decoded_nstate2)+self.fdyn_loss+self.idyn_loss
         
         self.optimizer_fdyn.zero_grad()
         self.optimizer_idyn.zero_grad()
         self.optimizer.zero_grad()
 
-        self.fdyn_loss.backward(retain_graph=True)
-        self.idyn_loss.backward(retain_graph=True)
+        #self.fdyn_loss.backward(retain_graph=True)
+        #self.idyn_loss.backward(retain_graph=True)
         self.loss.backward(retain_graph=True)   
 
         self.optimizer_fdyn.step()
@@ -170,20 +171,20 @@ class Encoder():
             pred_encoded_nstate = self.forward_dynamics.sample_prediction(encoded_state, action)
             encoded_nstate = self.encoder.forward(next_state)
 
-        return torch.linalg.norm((pred_encoded_nstate - encoded_state), ord=1)
+        return torch.linalg.norm((pred_encoded_nstate - encoded_nstate), ord=1)
 
 
 
 
     def update_writer(self, writer, i_iter):
 
-        enco_loss = torch.mean(self.loss)
-        deco_loss = torch.mean(self.loss)
+        loss = torch.mean(self.loss)
+        #deco_loss = torch.mean(self.loss)
         fd_loss = torch.mean(self.fdyn_loss)
         id_loss = torch.mean(self.idyn_loss)
 
-        writer.add_scalar("encodings/encoder_loss", enco_loss, i_iter)
-        writer.add_scalar("encodings/decoder_loss", enco_loss, i_iter)
+        writer.add_scalar("encodings/encoder_loss", loss, i_iter)
+        #writer.add_scalar("encodings/decoder_loss", enco_loss, i_iter)
         writer.add_scalar("encodings/forward_dynamics_loss", fd_loss, i_iter)
         writer.add_scalar("encodings/inverse_dynamics_loss", id_loss, i_iter)
 

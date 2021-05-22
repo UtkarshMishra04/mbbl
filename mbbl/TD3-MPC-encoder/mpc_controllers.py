@@ -45,7 +45,10 @@ class DMDMPCcontroller():
 	def get_control(self, state, rl_action, alpha):
 		obs, obs_list, obs_next_list, act_list = [], [], [], [] 
 		[obs.append(state) for _ in range(self.num_simulated_paths)]
-
+		print("means: ",self.mean)
+		print("rlaction:  ",rl_action)
+		self.mean[0] = rl_action
+		print("means:",self.mean)
 		for step in range(self.horizon):
 
 			obs_list.append(obs)

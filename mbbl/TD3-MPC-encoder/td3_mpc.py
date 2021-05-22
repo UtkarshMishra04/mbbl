@@ -34,7 +34,7 @@ class TD3_MPC:
                  action_noise=0.1,
                  target_action_noise_std=0.2,
                  target_action_noise_clip=0.5,
-                 explore_size=10000,
+                 explore_size=50000,
                  step_per_iter=3000,
                  batch_size=100,
                  min_update_step=1000,
@@ -168,7 +168,7 @@ class TD3_MPC:
                 self.env.render()
             action_rl, action_mpc = self.choose_action_mpc(state, 0)
             action = action_mpc
-            print("action in eval", action)
+            #print("action in eval", action)
             state, reward, done, _ = self.env.step(action)
 
             test_reward += reward
@@ -204,7 +204,8 @@ class TD3_MPC:
                     #print("mpc action:",action_mpc, type(action_mpc))
                     action = action_mpc
                 next_state, reward, done, _ = self.env.step(action)
-                # next_state = self.running_state(next_state)
+                #ir_reward = self.encodings.intrisic_reward(state, action_rl.cpu().numpy()[0], next_state)
+                next_state = self.running_state(next_state)
                 mask = 0 if done else 1
                 # ('state', 'action', 'reward', 'next_state', 'mask', 'log_prob')
                 self.memory.push(state, action, reward, next_state, mask, None)

@@ -18,7 +18,7 @@ from td3_mpc import TD3_MPC
               help="Interpolation factor in polyak averaging for target networks")
 @click.option("--target_action_noise_std", type=float, default=0.2, help="Std for noise of target action")
 @click.option("--target_action_noise_clip", type=float, default=0.5, help="Clip ratio for target action noise")
-@click.option("--explore_size", type=int, default=1000, help="Explore steps before execute deterministic policy")
+@click.option("--explore_size", type=int, default=10000, help="Explore steps before execute deterministic policy")
 @click.option("--memory_size", type=int, default=10000, help="Size of replay memory")
 @click.option("--step_per_iter", type=int, default=1000, help="Number of steps of interaction in each iteration")
 @click.option("--batch_size", type=int, default=256, help="Batch size")
@@ -32,10 +32,10 @@ from td3_mpc import TD3_MPC
 @click.option("--model_path", type=str, default="trained_models", help="Directory to store model")
 @click.option("--log_path", type=str, default="./log/", help="Directory to save logs")
 @click.option("--seed", type=int, default=123, help="Seed for reproducing")
-@click.option("--planning_h", type=int, default=10, help="Planning horizon for MPC")
-@click.option("--simulated_paths",type=int, default=20, help="Simulations for MPC")
-@click.option("--elite_fraction",type=int, default=50, help="Elite fraction for MPC")
-@click.option("--alpha",type=float, default=0.5, help="Weight for MPC-RL")
+@click.option("--planning_h", type=int, default=30, help="Planning horizon for MPC")
+@click.option("--simulated_paths",type=int, default=50, help="Simulations for MPC")
+@click.option("--elite_fraction",type=int, default=10, help="Elite fraction for MPC")
+@click.option("--alpha",type=float, default=0.1, help="Weight for MPC-RL")
 @click.option("--gamma",type=float, default=0.8, help="Step size for MPC")
 
 def main(env_id, dim_latent, render, num_process, lr_p, lr_v, discount_factor, polyak, target_action_noise_std, target_action_noise_clip,
