@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import click
 import torch
+import os 
+import my_envs
 from torch.utils.tensorboard import SummaryWriter
 
 from td3_mpc import TD3_MPC
@@ -8,6 +10,7 @@ from td3_mpc import TD3_MPC
 
 @click.command()
 @click.option("--env_id", type=str, default="HalfCheetah-v3", help="Environment Id")
+@click.option("--damping", type=bool, default=False, help="Damping for change of dynamics")
 @click.option("--dim_latent", type=int, default=10, help="Number of Latent Observations")
 @click.option("--render", type=bool, default=False, help="Render environment or not")
 @click.option("--num_process", type=int, default=1, help="Number of process to run environment")
@@ -32,18 +35,18 @@ from td3_mpc import TD3_MPC
 @click.option("--model_path", type=str, default="trained_models", help="Directory to store model")
 @click.option("--log_path", type=str, default="./log/", help="Directory to save logs")
 @click.option("--seed", type=int, default=123, help="Seed for reproducing")
-@click.option("--planning_h", type=int, default=30, help="Planning horizon for MPC")
+@click.option("--planning_h", type=int, default=10, help="Planning horizon for MPC")
 @click.option("--simulated_paths",type=int, default=50, help="Simulations for MPC")
 @click.option("--elite_fraction",type=int, default=10, help="Elite fraction for MPC")
 @click.option("--alpha",type=float, default=0.1, help="Weight for MPC-RL")
 @click.option("--gamma",type=float, default=0.8, help="Step size for MPC")
 
-def main(env_id, dim_latent, render, num_process, lr_p, lr_v, discount_factor, polyak, target_action_noise_std, target_action_noise_clip,
+def main(env_id,damping, dim_latent, render, num_process, lr_p, lr_v, discount_factor, polyak, target_action_noise_std, target_action_noise_clip,
          explore_size, memory_size, step_per_iter, batch_size, min_update_step, update_step, max_iter, eval_iter,
          save_iter, action_noise, policy_update_delay, model_path, log_path, seed, planning_h,simulated_paths, elite_fraction,alpha,gamma):
     base_dir = log_path + env_id + "/TD3_MPC_encoder_exp{}".format(seed)
     writer = SummaryWriter(base_dir)
-
+    
     td3 = TD3_MPC(env_id,
               dim_latent=dim_latent,
               render=render,
@@ -70,6 +73,8 @@ def main(env_id, dim_latent, render, num_process, lr_p, lr_v, discount_factor, p
               gamma=gamma)
 
     for i_iter in range(1, max_iter + 1):
+        if i_iter == 100 and damping:
+            td3.env_id = "HalfCheetahModified-damping-v12"
         td3.learn(writer, i_iter)
 
         if i_iter % eval_iter == 0:
