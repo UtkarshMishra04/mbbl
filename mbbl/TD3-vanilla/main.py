@@ -63,11 +63,13 @@ def main(env_id, damping,leg, render, num_process, lr_p, lr_v, gamma, polyak, ta
 
     for i_iter in range(1, max_iter + 1):
 
-        if i_iter == 100 and damping:
+        if i_iter >= 300 and i_iter <= 500 and damping:
             td3.env_id = "HalfCheetahModified-damping-v12"
         
-        if i_iter == 3 and leg:
+        elif i_iter >= 300 and i_iter <= 500 and leg:
             td3.env_id = "HalfCheetahModified-leg-v12"
+        
+        else: td3.env_id = env_id
 
         td3.learn(writer, i_iter)
 

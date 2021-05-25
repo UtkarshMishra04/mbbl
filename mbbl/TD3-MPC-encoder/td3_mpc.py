@@ -205,7 +205,7 @@ class TD3_MPC:
                     action = action_mpc
                 next_state, reward, done, _ = self.env.step(action)
                 #ir_reward = self.encodings.intrisic_reward(state, action_rl.cpu().numpy()[0], next_state)
-                next_state = self.running_state(next_state)
+                #next_state = self.running_state(next_state)
                 mask = 0 if done else 1
                 # ('state', 'action', 'reward', 'next_state', 'mask', 'log_prob')
                 self.memory.push(state, action, reward, next_state, mask, None)
