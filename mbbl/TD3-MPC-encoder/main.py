@@ -3,6 +3,8 @@ import click
 import torch
 import os 
 import my_envs
+import gym
+import time
 from torch.utils.tensorboard import SummaryWriter
 
 from td3_mpc import TD3_MPC
@@ -72,13 +74,25 @@ def main(env_id,damping,leg, dim_latent, render, num_process, lr_p, lr_v, discou
               elite_fraction=elite_fraction,
               alpha=alpha,
               gamma=gamma)
-
+    
+    '''
+    env= gym.make("HalfCheetahModified-leg-v12")
+    env.reset()
+    #env.viewer.paused=True
+    for i in range(1000):
+        env.render()
+        time.sleep(5)
+        env.step(env.action_space.sample())
+    '''
     for i_iter in range(1, max_iter + 1):
-        if i_iter == 100 and damping:
+        
+        if i_iter >= 300 and i_iter <= 500 and damping:
             td3.env_id = "HalfCheetahModified-damping-v12"
         
-        if i_iter == 300 and leg:
+        elif i_iter >= 300 and i_iter <= 500 and leg:
             td3.env_id = "HalfCheetahModified-leg-v12"
+
+        else: td3.env_id = env_id
 
         td3.learn(writer, i_iter)
 
@@ -89,7 +103,6 @@ def main(env_id,damping,leg, dim_latent, render, num_process, lr_p, lr_v, discou
             td3.save(model_path)
 
         torch.cuda.empty_cache()
-
 
 if __name__ == '__main__':
     main()
